@@ -35,12 +35,14 @@ const NotificationSchema = new Schema({
   progress: {
     type: String,
   },
-  feature: {
-    featureTitle: { type: String },
-    featureDescription: { type: String },
-    featureDeadline: { type: String },
-    featureStatus: { type: String },
-  },
+  featureTitle: { type: String },
+  featureDescription: { type: String },
+  featureDeadline: { type: String },
+  featureStatus: { type: String },
+  featureProgress: { type: String },
+  singleSelect: { type: String },
+  receiveddepartment: { type: String },
+  sentdepartment: { type: String },
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
 });
 

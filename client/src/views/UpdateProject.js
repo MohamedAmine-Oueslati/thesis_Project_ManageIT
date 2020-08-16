@@ -2,7 +2,6 @@ import React from 'react';
 // import Select from 'react-select';
 import axios from 'axios';
 import jwtDecode from 'jwt-decode';
-import $ from 'jquery';
 import {
   Button,
   Card,
@@ -72,7 +71,10 @@ class UpdateProject extends React.Component {
     var isValid = this.validate();
     if (isValid) {
       e.preventDefault();
+      this.setState({ modal: !this.state.modal });
       console.log(this.state.singleSelect);
+      const jwt = localStorage.getItem('token');
+      const user = jwtDecode(jwt);
       axios
         .patch(
           `http://localhost:5000/project/create/${this.state.singleSelect}`,
@@ -84,10 +86,16 @@ class UpdateProject extends React.Component {
         .catch((err) => console.log('Error', err));
 
       axios
-        .patch(
-          `http://localhost:5000/notification/update/${this.state.singleSelect}`,
-          this.state.newFeature
-        )
+        .post('http://localhost:5000/notification/store', {
+          featureCreator: this.state.newFeature.featureCreator,
+          featureTitle: this.state.newFeature.featureTitle,
+          featureDeadline: this.state.newFeature.featureDeadline,
+          featureStatus: this.state.newFeature.featureStatus,
+          featureProgress: this.state.newFeature.featureProgress,
+          singleSelect: this.state.singleSelect,
+          fullname: user.fullname,
+          department: user.department,
+        })
         .then((response) => {
           console.log(response.data);
         })
@@ -273,13 +281,12 @@ class UpdateProject extends React.Component {
                               <Label for="exampleDate">Do it before :</Label>
                               <Input
                                 type="date"
-                                name="date"
+                                name="featureDeadline"
                                 id="inputDate"
                                 placeholder="date placeholder"
-                                min="2020-07-18"
+                                min="2020-08-08"
                                 value={newFeature.featureDeadline}
                                 onChange={this.handleChange}
-                                name="featureDeadline"
                               />
                               <div style={{ fontSize: 12, color: 'red' }}>
                                 {this.state.deadlineError}
@@ -313,10 +320,11 @@ class UpdateProject extends React.Component {
                         <center>
                           <img
                             src="https://images.assetsdelivery.com/compings_v2/alonastep/alonastep1605/alonastep160500181.jpg"
+                            alt="logo"
                             width="200px"
                           />
                           <br />
-                          Project has been successfully updated !
+                          Feature has been successfully added !
                         </center>
                       </ModalBody>
                       <ModalFooter>

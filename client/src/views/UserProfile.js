@@ -277,7 +277,7 @@ class UserProfile extends React.Component {
                         <center>
                           <img
                             src="https://images.assetsdelivery.com/compings_v2/alonastep/alonastep1605/alonastep160500181.jpg"
-                            width="200px"
+                            alt="profilephoto" width="200px"
                           />
                           <br />
                           Profile has been successfully updated !

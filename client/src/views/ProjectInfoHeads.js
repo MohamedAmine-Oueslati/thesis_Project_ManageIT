@@ -1,15 +1,14 @@
 import React from 'react';
 import axios from 'axios';
 import jwtDecode from 'jwt-decode';
+import socketIOClient from 'socket.io-client';
 import {
   Button,
   Card,
   CardHeader,
-  CustomInput,
   CardBody,
   CardFooter,
   CardText,
-  FormGroup,
   Form,
   Input,
   Label,
@@ -21,6 +20,7 @@ import {
   UncontrolledCollapse,
   Table,
 } from 'reactstrap';
+const ENDPOINT = 'http://127.0.0.1:5000';
 
 class ProjectInfoHeads extends React.Component {
   constructor(props) {
@@ -30,29 +30,67 @@ class ProjectInfoHeads extends React.Component {
       profileInformations: '',
       usersList: [],
       modal: false,
+      modal1: false,
     };
   }
+
+  toggle1 = () => {
+    this.setState({ modal1: !this.state.modal1 });
+  };
 
   toggle = () => {
     this.setState({ modal: !this.state.modal });
   };
 
-  handleDecline = () => {
-    this.setState({ modal: !this.state.modal });
-    axios.post('http://localhost:5000/project/decline', {
+  handleDecline(featureTitle, e) {
+    e.preventDefault();
+    this.setState({ modal1: !this.state.modal1 });
+    axios.patch(`http://localhost:5000/project/update/${featureTitle}`, {
+      featureStatus: 'Finished',
+      featureProgress: 'Declined by the Head of Department',
+    });
+    const jwt = localStorage.getItem('token');
+    const user = jwtDecode(jwt);
+    const socket = socketIOClient(ENDPOINT);
+    socket.emit('messageSent', {
       status: 'Finished',
       progress: 'Declined by the Head of Department',
-      title: this.state.info.title,
+      department: user.department,
+      title: featureTitle,
     });
-  };
+    axios.post('http://localhost:5000/notification/store', {
+      status: 'Finished',
+      progress: 'Declined by the Head of Department',
+      featureTitle,
+      department: user.department,
+    });
+  }
 
-  handleAccept = (featureTitle) => {
+  handleAccept(featureTitle, e) {
+    e.preventDefault();
     this.setState({ modal: !this.state.modal });
     axios.patch(`http://localhost:5000/project/update/${featureTitle}`, {
       featureStatus: 'In Progress',
       featureProgress: 'Sent to Methods Department',
     });
-  };
+    const jwt = localStorage.getItem('token');
+    const user = jwtDecode(jwt);
+    const socket = socketIOClient(ENDPOINT);
+    socket.emit('messageSent', {
+      featureTitle,
+      featureStatus: 'In Progress',
+      featureProgress: 'Sent to Methods Department',
+      receiveddepartment: 'Methods',
+      sentdepartment: user.department,
+    });
+    axios.post('http://localhost:5000/notification/store', {
+      featureTitle,
+      featureStatus: 'In Progress',
+      featureProgress: 'Sent to Methods Department',
+      receiveddepartment: 'Methods',
+      sentdepartment: user.department,
+    });
+  }
 
   getFeatureCreator = (id) => {
     for (var i in this.state.usersList) {
@@ -97,6 +135,15 @@ class ProjectInfoHeads extends React.Component {
     const defaultImageURL =
       'https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcSjGSxm1_lBkpyvSzWDPI9EPOmlwLCtxD0B_g&usqp=CAU';
     const { oneProjectInfo, profileInformations } = this.state;
+    const externalCloseBtn1 = (
+      <button
+        className="close"
+        style={{ position: 'absolute', top: '15px', right: '15px' }}
+        onClick={this.toggle1}
+      >
+        &times;
+      </button>
+    );
     const externalCloseBtn = (
       <button
         className="close"
@@ -147,7 +194,7 @@ class ProjectInfoHeads extends React.Component {
                   className="btn-fill"
                   color="primary"
                   type="submit"
-                  onClick={() => this.handleAccept(feat._id)}
+                  onClick={this.handleAccept.bind(this, feat._id)}
                 >
                   Submit To Methods
                 </Button>
@@ -155,10 +202,40 @@ class ProjectInfoHeads extends React.Component {
                   className="btn-fill"
                   color="primary"
                   type="submit"
-                  onClick={this.handleDecline}
+                  onClick={this.handleDecline.bind(this, feat._id)}
                 >
                   Decline
                 </Button>
+                <div>
+                  <Modal
+                    isOpen={this.state.modal1}
+                    toggle={this.toggle1}
+                    external={externalCloseBtn1}
+                  >
+                    <ModalBody>
+                      {' '}
+                      <br />{' '}
+                      <center>
+                        <img
+                          src="https://fotomelia.com/wp-content/uploads/edd/2015/03/croix-rouge-logo-1560x1548.png"
+                          alt="logo"
+                          width="200px"
+                        />
+                        <br />
+                        Project has been Declined !
+                      </center>
+                    </ModalBody>
+                    <ModalFooter>
+                      <Button
+                        color="secondary"
+                        onClick={this.toggle1}
+                        href="/admin/projects-history-heads"
+                      >
+                        Close
+                      </Button>
+                    </ModalFooter>
+                  </Modal>
+                </div>
                 <div>
                   <Modal
                     isOpen={this.state.modal}
@@ -169,17 +246,20 @@ class ProjectInfoHeads extends React.Component {
                       {' '}
                       <br />{' '}
                       <center>
-                        <Label for="exampleText">Reason :</Label>
-                        <Input type="textarea" name="text" id="exampleText" />
+                        <img
+                          src="https://images.assetsdelivery.com/compings_v2/alonastep/alonastep1605/alonastep160500181.jpg"
+                          alt="logo"
+                          width="200px"
+                        />
                         <br />
-                        Project has been declined !
+                        Project has been sent to Methods !
                       </center>
                     </ModalBody>
                     <ModalFooter>
                       <Button
                         color="secondary"
                         onClick={this.toggle}
-                        href="/admin/projects-history"
+                        href="/admin/projects-history-heads"
                       >
                         Close
                       </Button>

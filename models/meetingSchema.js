@@ -12,6 +12,9 @@ const MeetingSchema = new Schema({
   date: {
     type: String,
   },
+  time: {
+    type: String,
+  },
   department: {
     type: String,
   },

@@ -57,7 +57,8 @@ class ScheduledMeeting extends React.Component {
               return <span>{emp.label} - </span>;
             })}
           </td>
-          <td>{meeting.date.slice(0, 10)}</td>
+          <td>{meeting.time}</td>
+          <td>{meeting.date}</td>
         </tr>
       );
     });
@@ -77,6 +78,7 @@ class ScheduledMeeting extends React.Component {
                       <tr>
                         <th>Subject</th>
                         <th>Employees</th>
+                        <th>Time</th>
                         <th>Date</th>
                       </tr>
                     </thead>

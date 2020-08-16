@@ -1,4 +1,6 @@
 import React from 'react';
+import axios from 'axios';
+import Select from 'react-select';
 // reactstrap components
 import {
   Button,
@@ -8,7 +10,7 @@ import {
   CardFooter,
   // CardImg,
   CardTitle,
-  Label,
+  // Label,
   FormGroup,
   Form,
   Input,
@@ -18,209 +20,222 @@ import {
   Container,
   Row,
   Col,
+  Modal,
+  ModalBody,
+  ModalFooter,
 } from 'reactstrap';
 
-class RegisterHead extends React.Component {
+class AddHead extends React.Component {
   state = {
-    firstNameError: '',
-    lastNameError: '',
+    RegisterInformations: {
+      department: '',
+      fullname: '',
+      email: '',
+      password: '',
+      role: 'Head',
+    },
     departmentError: '',
+    fullnameError: '',
     emailError: '',
     passwordError: '',
-    dateError: '',
-    phoneError: ''
-  }
+    modal: false,
+  };
+
+  toggle = () => {
+    this.setState({ modal: !this.state.modal });
+  };
+
   componentDidMount() {
     document.body.classList.toggle('register-page');
   }
   componentWillUnmount() {
     document.body.classList.toggle('register-page');
   }
-  // const DatePicker = require("reactstrap-date-picker");
-  async fillHeadFormOnSubmit(e) {
-    var isValid = this.validate();
-    if (isValid) {
-      e.preventDefault();
-      var firstName = document.getElementById("firstName").value;
-      var lastName = document.getElementById("lastName").value;
-      var fullname = firstName + " " + lastName;
-      var email = document.getElementById("email").value;
-      var headDepartment = document.getElementById("department").value;
-      const department = "";
-      if (headDepartment === "Head of Financial Department") {
-        department = "Financial"
-      } else if (headDepartment === "Head of Accounting Department") {
-        department = "Accounting"
-      } else if (headDepartment === "Head of Marketing Department") {
-        department = "Marketing"
-      } else if (headDepartment === "Head of Human Ressources Department") {
-        department = "Human Ressources"
-      } else if (headDepartment === "Head of Methods Department") {
-        department = "Methods"
-      } else if (headDepartment === "Head of IT Department") {
-        department = "IT"
-      }
-      var role = "Head";
-      var dateOfBirth = document.getElementById("dateOfBirth").value;
-      var phoneNumber = document.getElementById("phoneNumber").value;
-      var password = document.getElementById("Password").value;
-      if (
-        firstName === "" ||
-        lastName === "" ||
-        email === "" ||
-        headDepartment === "" ||
-        role === "" ||
-        dateOfBirth === "" ||
-        phoneNumber === "" ||
-        password === ""
-      ) {
-        alert("fill all the form please!!");
-        return;
-      }
-      await fetch("http://localhost:5000/CreateNewHeadDepartment", {
-        method: "POST",
-        body: JSON.stringify({
-          fullname,
-          email,
-          department,
-          role,
-          dateOfBirth,
-          phoneNumber,
-          password,
-        }),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      // .then(() => {});
-      document.getElementById("firstName").value = "";
-      document.getElementById("lastName").value = "";
-      document.getElementById("email").value = "";
-      document.getElementById("department").value = "";
-      document.getElementById("dateOfBirth").value = "";
-      document.getElementById("phoneNumber").value = "";
-      document.getElementById("Password").value = "";
-    }
-  }
+
+  handleChangeSelect = (e) => {
+    const RegisterInformations = { ...this.state.RegisterInformations };
+    RegisterInformations.department = e.value;
+    this.setState({ RegisterInformations });
+  };
+
+  handleChange = ({ currentTarget: input }) => {
+    const RegisterInformations = { ...this.state.RegisterInformations };
+    RegisterInformations[input.name] = input.value;
+    this.setState({ RegisterInformations });
+  };
+
+  handleSubmit = (e) => {
+    // var isValid = this.validate();
+    // if (isValid) {
+    e.preventDefault();
+    this.setState({ modal: !this.state.modal });
+    console.log(this.state.RegisterInformations);
+    axios
+      .post('http://localhost:5000/users', this.state.RegisterInformations)
+      .then((response) => {
+        console.log(response.data);
+      })
+      .catch((err) => console.log('Error', err));
+    // }
+  };
 
   validate = () => {
-    var firstName = document.getElementById("firstName").value;
-    var lastName = document.getElementById("lastName").value;
-    var email = document.getElementById("email").value;
-    var headDepartment = document.getElementById("department").value;
-    var password = document.getElementById("Password").value;
-    var dateOfBirth = document.getElementById("dateOfBirth").value;
-    var phoneNumber = document.getElementById("phoneNumber").value;
-    var firstNameError = ''
-    var lastNameError = ''
-    var emailError = ''
-    var departmentError = ''
-    var passwordError = ''
-    var dateError = ''
-    var phoneError = ''
-    if (firstName.length < 3) {
-      firstNameError = "invalid firstname"
+    let departmentError = '';
+    let fullnameError = '';
+    let emailError = '';
+    let passwordError = '';
+    if (!this.state.RegisterInformations.department) {
+      departmentError = 'you need to choose a department';
     }
-    if (lastName.length < 3) {
-      lastNameError = "invalid lastname"
+    if (this.state.RegisterInformations.fullname.length < 6) {
+      fullnameError = 'invalid fullName';
     }
-    if (!(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email))) {
-      emailError = "invalid or existing email"
+    if (
+      !/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(
+        this.state.RegisterInformations.email
+      )
+    ) {
+      emailError = 'invalid or existing email';
     }
-    if (!password.match(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$/)) {
-      passwordError = 'invalid password'
+    if (
+      !this.state.RegisterInformations.password.match(
+        /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$/
+      )
+    ) {
+      passwordError = 'invalid password';
     }
-    if (headDepartment === "choose a department") {
-      departmentError = "you need to choose a department"
-    }
-    if (!dateOfBirth) {
-      dateError = "you need to pick a date of birth"
-    }
-    if (!phoneNumber.match(/^(1?(-?\d{2})-?)?(\d{3})(-?\d{3})$/)) {
-      phoneError = "invalid phone number"
-    }
-    if (firstNameError || lastNameError || departmentError || emailError || passwordError ||
-      dateError || phoneError) {
+    if (departmentError || fullnameError || emailError || passwordError) {
       this.setState({
-        firstNameError, lastNameError, departmentError, emailError, passwordError,
-        dateError, phoneError
-      })
-      return false
+        departmentError,
+        fullnameError,
+        emailError,
+        passwordError,
+      });
+      return false;
     }
-    return true
-  }
+    return true;
+  };
 
   render() {
+    const { RegisterInformations } = this.state;
+    const externalCloseBtn = (
+      <button
+        className="close"
+        style={{ position: 'absolute', top: '15px', right: '15px' }}
+        onClick={this.toggle}
+      >
+        &times;
+      </button>
+    );
     return (
       <>
         <div className="content">
           <Container>
+            {/* <Row> */}
+            {/* <Col className="ml-auto" md="5">
+                <div className="info-area info-horizontal mt-5">
+                  <div className="icon icon-warning">
+                    <i className="tim-icons icon-wifi" />
+                  </div>
+                  <div className="description">
+                    <h3 className="info-title">Marketing</h3>
+                    <p className="description">
+                      We've created the marketing campaign of the website. It
+                      was a very interesting collaboration.
+                    </p>
+                  </div>
+                </div>
+                <div className="info-area info-horizontal">
+                  <div className="icon icon-primary">
+                    <i className="tim-icons icon-triangle-right-17" />
+                  </div>
+                  <div className="description">
+                    <h3 className="info-title">Fully Coded in HTML5</h3>
+                    <p className="description">
+                      We've developed the website with HTML5 and CSS3. The
+                      client has access to the code using GitHub.
+                    </p>
+                  </div>
+                </div>
+                <div className="info-area info-horizontal">
+                  <div className="icon icon-info">
+                    <i className="tim-icons icon-trophy" />
+                  </div>
+                  <div className="description">
+                    <h3 className="info-title">Built Audience</h3>
+                    <p className="description">
+                      There is also a Fully Customizable CMS Admin Dashboard for
+                      this product.
+                    </p>
+                  </div>
+                </div>
+              </Col> */}
+
             <Col className="mr-auto" lg="8" md="6">
               <Form className="form">
                 <Card className="card-register card-white">
                   <CardHeader>
                     <img alt="..." src={require('./card-primary.png')} />
-                    <CardTitle tag="h1">Add Head of Department</CardTitle>
+                    <CardTitle tag="h1">Add a New Head</CardTitle>
                   </CardHeader>
                   <CardBody>
-                    <FormGroup>
-                      <Label for="exampleSelect">select a department:</Label>
-                      <Input
-                        type="select"
-                        name="select"
-                        id="department"
-                        required
-                      >
-                        <option selected disabled> choose a department </option>
-                        <option> Head of Financial Department </option>
-                        <option> Head of Accounting Department </option>
-                        <option> Head of Marketing Department </option>
-                        <option> Head of Human Ressources Department </option>
-                        <option> Head of Methods Department </option>
-                        <option> Head of IT Department </option>
-                      </Input>
-                    </FormGroup>
-                    <div style={{ fontSize: 12, color: "red" }}>
-                      {this.state.departmentError}
-                    </div>
                     <Row>
-                      <Col lg="6" md="4">
-                        <InputGroup>
-                          <InputGroupAddon addonType="prepend">
-                            <InputGroupText>
-                              <i className="tim-icons icon-single-02" />
-                            </InputGroupText>
-                          </InputGroupAddon>
-                          <Input
-                            placeholder="firstName"
-                            type="text"
-                            id="firstName"
-                            required
+                      <Col lg="10" md="10" sm="3">
+                        <FormGroup>
+                          <Select
+                            className="react-select info"
+                            classNamePrefix="react-select"
+                            placeholder="Choose Department"
+                            name="department"
+                            id="department"
+                            value={this.state.department}
+                            onChange={this.handleChangeSelect}
+                            options={[
+                              {
+                                value: 'Financial',
+                                label: 'financial Department',
+                              },
+                              {
+                                value: 'Accounting',
+                                label: 'Accounting Department',
+                              },
+                              {
+                                value: 'Marketing',
+                                label: 'Marketing Department',
+                              },
+                              {
+                                value: 'Human Ressources',
+                                label: 'Human Ressources Department',
+                              },
+                              { value: 'Methods', label: 'Methods Department' },
+                              { value: 'IT', label: 'IT Department' },
+                            ]}
                           />
-                        </InputGroup>
-                        <div style={{ fontSize: 12, color: "red" }}>
-                          {this.state.firstNameError}
-                        </div>
-                      </Col>
-                      <Col lg="6" md="4">
-                        <InputGroup>
-                          <InputGroupAddon addonType="prepend">
-                            <InputGroupText>
-                              <i className="tim-icons icon-single-02" />
-                            </InputGroupText>
-                          </InputGroupAddon>
-                          <Input
-                            placeholder="lastName"
-                            type="text"
-                            id="lastName"
-                            required
-                          />
-                        </InputGroup>
-                        <div style={{ fontSize: 12, color: "red" }}>
-                          {this.state.lastNameError}
-                        </div>
+                          <div style={{ fontSize: 12, color: 'red' }}>
+                            {this.state.departmentError}
+                          </div>
+                        </FormGroup>
                       </Col>
                     </Row>
+
+                    <InputGroup>
+                      <InputGroupAddon addonType="prepend">
+                        <InputGroupText>
+                          <i className="tim-icons icon-single-02" />
+                        </InputGroupText>
+                      </InputGroupAddon>
+                      <Input
+                        placeholder="Fullname"
+                        type="text"
+                        name="fullname"
+                        id="fullname"
+                        value={RegisterInformations.fullname}
+                        onChange={this.handleChange}
+                      />
+                    </InputGroup>
+                    <div style={{ fontSize: 12, color: 'red' }}>
+                      {this.state.fullnameError}
+                    </div>
                     <InputGroup>
                       <InputGroupAddon addonType="prepend">
                         <InputGroupText>
@@ -229,43 +244,15 @@ class RegisterHead extends React.Component {
                       </InputGroupAddon>
                       <Input
                         placeholder="Email"
-                        type="email"
+                        type="text"
+                        name="email"
                         id="email"
-                        required
+                        value={RegisterInformations.email}
+                        onChange={this.handleChange}
                       />
                     </InputGroup>
-                    <div style={{ fontSize: 12, color: "red" }}>
+                    <div style={{ fontSize: 12, color: 'red' }}>
                       {this.state.emailError}
-                    </div>
-                    <FormGroup>
-                      <input
-                        type="date"
-                        className="form-control datetimepicker"
-                        min="1970-07-18"
-                        id="dateOfBirth"
-                        required
-                      />
-                    </FormGroup>
-                    <div style={{ fontSize: 12, color: "red" }}>
-                      {this.state.dateError}
-                    </div>
-                    <InputGroup>
-                      <InputGroupAddon addonType="prepend">
-                        <InputGroupText>
-                          <i className="fas fa-phone fa-rotate-180" />
-                        </InputGroupText>
-                      </InputGroupAddon>
-                      <Input
-                        placeholder="phoneNumber"
-                        type="tel"
-                        id="phoneNumber"
-                        maxLength="8"
-                        minLength="8"
-                        required
-                      />
-                    </InputGroup>
-                    <div style={{ fontSize: 12, color: "red" }}>
-                      {this.state.phoneError}
                     </div>
                     <InputGroup>
                       <InputGroupAddon addonType="prepend">
@@ -276,31 +263,72 @@ class RegisterHead extends React.Component {
                       <Input
                         placeholder="Password"
                         type="password"
-                        id="Password"
-                        required
+                        name="password"
+                        id="password"
+                        value={RegisterInformations.password}
+                        onChange={this.handleChange}
                       />
+                      <br />
                     </InputGroup>
-                    <div style={{ fontSize: 12, color: "red" }}>
+                    <div style={{ fontSize: 12, color: 'red' }}>
                       {this.state.passwordError}
                     </div>
+                    {/* <FormGroup check className="text-left">
+                      <Label check>
+                        <Input type="checkbox" />
+                        <span className="form-check-sign" />I agree to the{' '}
+                        <a href="#pablo" onClick={(e) => e.preventDefault()}>
+                          terms and conditions
+                        </a>
+                        .
+                      </Label>
+                    </FormGroup> */}
                   </CardBody>
                   <CardFooter>
                     <Button
                       className="btn-round"
                       color="primary"
-                      // href="#pablo"
-                      onClick={
-                        ((e) => e.preventDefault(),
-                          this.fillHeadFormOnSubmit.bind(this))
-                      }
+                      href="#pablo"
+                      onClick={this.handleSubmit}
                       size="lg"
                     >
-                      Register
+                      Confirm
                     </Button>
+                    <div>
+                      <Modal
+                        isOpen={this.state.modal}
+                        toggle={this.toggle}
+                        external={externalCloseBtn}
+                      >
+                        <ModalBody>
+                          {' '}
+                          <br />{' '}
+                          <center>
+                            <img
+                              src="https://images.assetsdelivery.com/compings_v2/alonastep/alonastep1605/alonastep160500181.jpg"
+                              alt="logo"
+                              width="200px"
+                            />
+                            <br />
+                        Head has been successfully added !
+                      </center>
+                        </ModalBody>
+                        <ModalFooter>
+                          <Button
+                            color="secondary"
+                            onClick={this.toggle}
+                            href="/admin/AddHead"
+                          >
+                            Close
+                      </Button>
+                        </ModalFooter>
+                      </Modal>
+                    </div>
                   </CardFooter>
                 </Card>
               </Form>
             </Col>
+            {/* </Row> */}
           </Container>
         </div>
       </>
@@ -308,4 +336,4 @@ class RegisterHead extends React.Component {
   }
 }
 
-export default RegisterHead;
+export default AddHead;

@@ -28,6 +28,7 @@ class ProjectHistoryMethods extends React.Component {
       projects1: [],
       projects2: [],
       projects3: [],
+      users: [],
       ProjHistory: 'data1',
     };
   }
@@ -38,15 +39,23 @@ class ProjectHistoryMethods extends React.Component {
     });
   };
 
+  findUser = (projectUser) => {
+    var user = this.state.users.find((u) => u._id === projectUser);
+    if (user) return user.fullname;
+  };
   componentDidMount() {
-    const jwt = localStorage.getItem('token');
-    const user = jwtDecode(jwt);
     axios.get('http://localhost:5000/project/methods/').then((response) => {
       var projects1 = response.data[0];
       var projects2 = response.data[1];
       var projects3 = response.data[2];
       this.setState({ projects1, projects2, projects3 });
-      console.log(this.state);
+      console.log(response.data);
+    });
+
+    //get the the list of users
+    axios.get('http://localhost:5000/users').then((response) => {
+      console.log(response.data);
+      this.setState({ users: response.data });
     });
   }
 
@@ -84,6 +93,7 @@ class ProjectHistoryMethods extends React.Component {
       return (
         <tr key={project._id}>
           <td>{project.title}</td>
+          <td>{this.findUser(project.user)}</td>
           <td>{project.deadline.slice(0, 10)}</td>
           <th>{project.status}</th>
           <th>{project.progress}</th>
@@ -105,6 +115,7 @@ class ProjectHistoryMethods extends React.Component {
       return (
         <tr key={project._id}>
           <td>{project.title}</td>
+          <td>{this.findUser(project.user)}</td>
           <td>{project.department}</td>
           <td>{project.deadline.slice(0, 10)}</td>
           <th>{project.status}</th>
@@ -127,12 +138,14 @@ class ProjectHistoryMethods extends React.Component {
       return (
         <tr key={i}>
           <td>{proj.title}</td>
+          <td>{this.findUser(proj.user)}</td>
+          <td>{proj.department}</td>
           <td>{proj.deadline}</td>
           <th>{proj.status}</th>
           <th>{proj.progress}</th>
           <td className="text-center">
             <Button
-              onClick={this.handleSubmit.bind(this, i)}
+              onClick={() => this.handleInfo(proj._id)}
               color="link"
               id="buttonInfo"
               title=""
@@ -236,6 +249,7 @@ class ProjectHistoryMethods extends React.Component {
                       <thead className="text-primary">
                         <tr>
                           <th>Title</th>
+                          <th>Creator</th>
                           {this.state.ProjHistory === 'data2' ||
                           this.state.ProjHistory === 'data3' ? (
                             <th>Department</th>

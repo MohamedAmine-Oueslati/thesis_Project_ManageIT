@@ -50,6 +50,70 @@ router.get('/dashboardUser', (req, res) => {
   });
 });
 
+router.get('/projectbudget', (req, res) => {
+  Project.find({}, function (err, result) {
+    if (err) {
+      res.send(err);
+    } else {
+      var arr = [];
+      var fin = 0; var acc = 0; var mark = 0; var hr = 0; var meth = 0; var it = 0; var sum = 0
+      for (var i = 0; i < result.length; i++) {
+        if (result[i].department === "Financial") {
+          for (let j = 0; j < result[i].feature.length; j++) {
+            if (result[i].feature[j].featureEstimatedPrice) {
+              fin += result[i].feature[j].featureEstimatedPrice
+              sum += result[i].feature[j].featureEstimatedPrice
+            }
+          }
+        }
+        else if (result[i].department === "Accounting") {
+          for (let j = 0; j < result[i].feature.length; j++) {
+            if (result[i].feature[j].featureEstimatedPrice) {
+              acc += result[i].feature[j].featureEstimatedPrice
+              sum += result[i].feature[j].featureEstimatedPrice
+            }
+          }
+        }
+        else if (result[i].department === "Marketing") {
+          for (let j = 0; j < result[i].feature.length; j++) {
+            if (result[i].feature[j].featureEstimatedPrice) {
+              mark += result[i].feature[j].featureEstimatedPrice
+              sum += result[i].feature[j].featureEstimatedPrice
+            }
+          }
+        }
+        else if (result[i].department === "Human Ressources") {
+          for (let j = 0; j < result[i].feature.length; j++) {
+            if (result[i].feature[j].featureEstimatedPrice) {
+              hr += result[i].feature[j].featureEstimatedPrice
+              sum += result[i].feature[j].featureEstimatedPrice
+            }
+          }
+        }
+        else if (result[i].department === "Methods") {
+          for (let j = 0; j < result[i].feature.length; j++) {
+            if (result[i].feature[j].featureEstimatedPrice) {
+              meth += result[i].feature[j].featureEstimatedPrice
+              sum += result[i].feature[j].featureEstimatedPrice
+            }
+          }
+        }
+        else if (result[i].department === "IT") {
+          for (let j = 0; j < result[i].feature.length; j++) {
+            if (result[i].feature[j].featureEstimatedPrice) {
+              it += result[i].feature[j].featureEstimatedPrice
+              sum += result[i].feature[j].featureEstimatedPrice
+            }
+          }
+        }
+      }
+      arr.push(fin); arr.push(acc); arr.push(mark); arr.push(hr); arr.push(meth); arr.push(it);
+      arr.push(sum)
+      res.send(arr);
+    }
+  });
+});
+
 router.get('/projectMonth', (req, res) => {
   Project.find({}, function (err, result) {
     if (err) {

@@ -69,6 +69,8 @@ class CreateProject extends React.Component {
     if (isValid) {
       this.setState({ modal: !this.state.modal });
       e.preventDefault();
+      const jwt = localStorage.getItem('token');
+      const user = jwtDecode(jwt);
       axios
         .post('http://localhost:5000/project/create', {
           department: this.state.profileInformations.department,
@@ -86,15 +88,16 @@ class CreateProject extends React.Component {
         department: this.state.profileInformations.department,
         ...this.state.newProject,
         status: 'Created',
-        progress: `Created by ${this.state.profileInformations.fullname}`
+        progress: `Created by ${this.state.profileInformations.fullname}`,
+        fullname: user.fullname
       })
-      axios
-        .post('http://localhost:5000/meeting/store', {
-          department: this.state.profileInformations.department,
-          ...this.state.newProject,
-          status: 'Created',
-          progress: `Created by ${this.state.profileInformations.fullname}`,
-        })
+      axios.post('http://localhost:5000/notification/store', {
+        department: this.state.profileInformations.department,
+        ...this.state.newProject,
+        status: 'Created',
+        progress: `Created by ${this.state.profileInformations.fullname}`,
+        fullname: user.fullname
+      });
       //-----------------
     };
   }
@@ -245,7 +248,7 @@ class CreateProject extends React.Component {
                         <center>
                           <img
                             src="https://images.assetsdelivery.com/compings_v2/alonastep/alonastep1605/alonastep160500181.jpg"
-                            width="200px"
+                            alt="logo" width="200px"
                           />
                           <br />
                           Project has been successfully created !

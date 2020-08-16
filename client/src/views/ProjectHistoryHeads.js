@@ -19,10 +19,16 @@ class ProjectHistoryHeads extends React.Component {
     super(props);
     this.state = {
       projects: [],
+      users: [],
       currentIndex: '',
       view: 'false',
     };
   }
+
+  findUser = (projectUser) => {
+    var user = this.state.users.find((u) => u._id === projectUser);
+    if (user) return user.fullname;
+  };
   componentDidMount() {
     const jwt = localStorage.getItem('token');
     const user = jwtDecode(jwt);
@@ -34,6 +40,12 @@ class ProjectHistoryHeads extends React.Component {
         console.log(response.data);
         this.setState({ projects: response.data });
       });
+
+    //get the the list of projects by user
+    axios.get('http://localhost:5000/users').then((response) => {
+      console.log(response.data);
+      this.setState({ users: response.data });
+    });
   }
 
   handleInfo = (id) => {
@@ -57,6 +69,7 @@ class ProjectHistoryHeads extends React.Component {
       return (
         <tr key={project._id}>
           <td>{project.title}</td>
+          <td>{this.findUser(project.user)}</td>
           <td>{project.deadline.slice(0, 10)}</td>
           <th>{project.status}</th>
           <th>{project.progress}</th>
@@ -90,6 +103,7 @@ class ProjectHistoryHeads extends React.Component {
                       <thead className="text-primary">
                         <tr>
                           <th>Title</th>
+                          <th>Creator</th>
                           <th>Do it before</th>
                           <th>Status</th>
                           <th>Progress</th>

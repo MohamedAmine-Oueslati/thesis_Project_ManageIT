@@ -1,16 +1,17 @@
 import React from 'react';
 import axios from 'axios';
 import jwtDecode from 'jwt-decode';
+import socketIOClient from 'socket.io-client';
 import {
   Button,
   Card,
   CardHeader,
-  CustomInput,
   CardBody,
   CardFooter,
   CardText,
-  FormGroup,
+  CustomInput,
   Form,
+  FormGroup,
   Input,
   Label,
   Row,
@@ -21,6 +22,7 @@ import {
   UncontrolledCollapse,
   Table,
 } from 'reactstrap';
+const ENDPOINT = 'http://127.0.0.1:5000';
 
 class ProjectInfoMethods extends React.Component {
   constructor(props) {
@@ -29,6 +31,10 @@ class ProjectInfoMethods extends React.Component {
       oneProjectInfo: [],
       profileInformations: '',
       modal: false,
+      selectedFile: null,
+      EstimateFileStatus: 'false',
+      featureEstimateFile: '',
+      featureEstimatedPrice: '',
     };
   }
 
@@ -36,19 +42,90 @@ class ProjectInfoMethods extends React.Component {
     this.setState({ modal: !this.state.modal });
   };
 
-  handleSendToMethods = (featureTitle) => {
+  handleChange = (e) => {
+    const featureEstimatedPrice = e.currentTarget.value;
+    this.setState({ featureEstimatedPrice });
+  };
+
+  onChangeFile = (e) => {
+    console.log(e.target.files[0]);
+    this.setState({
+      selectedFile: e.target.files[0],
+      loaded: 0,
+    });
+  };
+
+  onClickHandler = (e) => {
+    e.preventDefault();
+    const data = new FormData();
+    data.append('file', this.state.selectedFile);
+    axios
+      .post('http://localhost:5000/upload-images/', data, {
+        // receive two    parameter endpoint url ,form data
+      })
+      .then((response) => {
+        // then print response status
+        console.log(response.data.data[0].url);
+        this.setState({ featureEstimateFile: response.data.data[0].url });
+      });
+  };
+
+  handleSendToMethods(featureTitle, e) {
+    e.preventDefault()
     this.setState({ modal: !this.state.modal });
     axios.patch(`http://localhost:5000/project/update/${featureTitle}`, {
       featureStatus: 'In Progress',
       featureProgress: 'Sent to Methods Department',
     });
+
+    const jwt = localStorage.getItem('token');
+    const user = jwtDecode(jwt);
+    const socket = socketIOClient(ENDPOINT);
+    socket.emit('messageSent', {
+      featureTitle,
+      featureStatus: 'In Progress',
+      featureProgress: 'Sent to Methods Department',
+      receiveddepartment: 'Methods',
+      sentdepartment: user.department,
+    });
+    axios.post('http://localhost:5000/notification/store', {
+      featureTitle,
+      featureStatus: 'In Progress',
+      featureProgress: 'Sent to Methods Department',
+      receiveddepartment: 'Methods',
+      sentdepartment: user.department,
+    });
   };
 
-  handleReturnBackToMethods = (featureTitle) => {
+  handleReturnBackToMethods(featureTitle, e) {
+    e.preventDefault()
     this.setState({ modal: !this.state.modal });
-    axios.patch(`http://localhost:5000/project/update/${featureTitle}`, {
+    axios.patch(
+      `http://localhost:5000/project/update/estimate/${featureTitle}`,
+      {
+        featureStatus: 'In Progress',
+        featureProgress: 'Estimate Sent back from IT',
+        featureEstimateFile: this.state.featureEstimateFile,
+        featureEstimatedPrice: this.state.featureEstimatedPrice,
+      }
+    );
+    this.setState({ EstimateFileStatus: 'true' });
+    const jwt = localStorage.getItem('token');
+    const user = jwtDecode(jwt);
+    const socket = socketIOClient(ENDPOINT);
+    socket.emit('messageSent', {
+      featureTitle,
       featureStatus: 'In Progress',
       featureProgress: 'Estimate Sent back from IT',
+      receiveddepartment: 'Methods',
+      sentdepartment: user.department,
+    });
+    axios.post('http://localhost:5000/notification/store', {
+      featureTitle,
+      featureStatus: 'In Progress',
+      featureProgress: 'Estimate Sent back from IT',
+      receiveddepartment: 'Methods',
+      sentdepartment: user.department,
     });
   };
 
@@ -96,85 +173,154 @@ class ProjectInfoMethods extends React.Component {
           if (
             (feat.featureStatus === 'In Progress' && infoView === 'data1') ||
             (feat.featureProgress === 'Sent to IT Department' &&
-              infoView === 'data2')
-          ) {
-            return (
-              <div key={key}>
-                <Table striped>
-                  <tbody>
+              infoView === 'data2') ||
+            (feat.featureProgress === 'Estimate Sent back from IT' &&
+              infoView === 'data2') ||
+            (feat.featureProgress === 'Sent to CEO' && infoView === 'data2') ||
+            (feat.featureProgress === 'Validated and planned for production' &&
+              infoView === 'data3')
+          ) { 
+          return (
+            <div key={key}>
+              <Table striped>
+                <tbody>
+                  <tr>
+                    <th scope="row">Title</th>
+                    <td>{feat.featureTitle}</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Description</th>
+                    <td>{feat.featureDescription}</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Deadline</th>
+                    <td>{feat.featureDeadline}</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Status</th>
+                    <td>{feat.featureStatus}</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Progress</th>
+                    <td>{feat.featureProgress}</td>
+                  </tr>
+                  {feat.featureSpecificationsFile ? (
                     <tr>
-                      <th scope="row">Title</th>
-                      <td>{feat.featureTitle}</td>
+                      <th scope="row">Specifications File</th>
+                      <td>
+                        <a href={feat.featureSpecificationsFile}>Download</a>
+                      </td>
                     </tr>
+                  ) : null}
+                  {feat.featureEstimateFile ? (
                     <tr>
-                      <th scope="row">Description</th>
-                      <td>{feat.featureDescription}</td>
+                      <th scope="row">Estimate File</th>
+                      <td>
+                        <a href={feat.featureEstimateFile}>Download</a>
+                      </td>
                     </tr>
-                    <tr>
-                      <th scope="row">Deadline</th>
-                      <td>{feat.featureDeadline}</td>
-                    </tr>
-                    <tr>
-                      <th scope="row">Status</th>
-                      <td>{feat.featureStatus}</td>
-                    </tr>
-                    <tr>
-                      <th scope="row">Progress</th>
-                      <td>{feat.featureProgress}</td>
-                    </tr>
-                  </tbody>
-                </Table>
-                <br></br>
+                  ) : null}
+                </tbody>
+              </Table>
+              <br></br>
 
-                <Button
-                  className="btn-fill"
-                  color="primary"
-                  type="submit"
-                  onClick={() => this.handleSendToMethods(feat._id)}
-                >
-                  Submit To Methods
-                </Button>
-                <Button
-                  className="btn-fill"
-                  color="primary"
-                  type="submit"
-                  onClick={this.handleDecline}
-                >
-                  Decline
-                </Button>
-
-                <div>
-                  <Modal
-                    isOpen={this.state.modal}
-                    toggle={this.toggle}
-                    external={externalCloseBtn}
+              {infoView === 'data1' ? (
+                <>
+                  <Button
+                    className="btn-fill"
+                    color="primary"
+                    type="submit"
+                    onClick={this.handleSendToMethods(this, feat._id)}
                   >
-                    <ModalBody>
-                      {' '}
-                      <br />{' '}
-                      <center>
-                        <Label for="exampleText">Reason :</Label>
-                        <Input type="textarea" name="text" id="exampleText" />
-                        <br />
-                        Project has been declined !
-                      </center>
-                    </ModalBody>
-                    <ModalFooter>
-                      <Button
-                        color="secondary"
-                        onClick={this.toggle}
-                        href="/admin/projects-history"
-                      >
-                        Close
-                      </Button>
-                    </ModalFooter>
-                  </Modal>
-                </div>
-                <br></br>
+                    Submit To Methods
+                    </Button>{' '}
+                  </>
+                ) : infoView === 'data2' ? (
+                  <>
+                    <Row>
+                      <Col className="pr-md-1" md="6">
+                        <FormGroup>
+                          <Label for="exampleFile">Upload your files :</Label>
+                          <CustomInput
+                            type="file"
+                            id="exampleFile"
+                            name="customFile"
+                            onChange={this.onChangeFile}
+                          />
+                        </FormGroup>
+                      </Col>
+                      <Col className="pr-md-1" md="4">
+                        <Button
+                          style={{ marginTop: 24 }}
+                          className="btn-fill"
+                          color="primary"
+                          type="submit"
+                          onClick={this.onClickHandler}
+                        >
+                          Upload
+                        </Button>
+                      </Col>
+                    </Row>
+                    <Row>
+                      <Col className="pr-md-1" md="5">
+                        <FormGroup>
+                          <label>Estimated Budget</label>
+                          <Input
+                            placeholder="Enter the estimated budget"
+                            type="number"
+                            step="100"
+                            value={this.state.featureEstimatedPrice}
+                            onChange={this.handleChange}
+                            name="featureTitle"
+                          />
+                          <div style={{ fontSize: 12, color: 'red' }}></div>
+                        </FormGroup>
+                      </Col>
+                    </Row>
+                    <Button
+                      className="btn-fill"
+                      color="primary"
+                      type="submit"
+                      onClick={this.handleReturnBackToMethods.bind(this, feat._id)}
+                    >
+                      Submit Estimate To Methods
+                    </Button>{' '}
+                  </>
+                ) : null}
+              <div>
+                <Modal
+                  isOpen={this.state.modal}
+                  toggle={this.toggle}
+                  external={externalCloseBtn}
+                >
+                  <ModalBody>
+                    {' '}
+                    <br />{' '}
+                    <center>
+                      <img
+                        src="https://images.assetsdelivery.com/compings_v2/alonastep/alonastep1605/alonastep160500181.jpg"
+                        alt="logo" width="200px"
+                      />
+                      <br />
+                         Project has been sent back to Methods !
+                        </center>
+                  </ModalBody>
+                  <ModalFooter>
+                    <Button
+                      color="secondary"
+                      onClick={this.toggle}
+                      href="/admin/projects-history-IT"
+                    >
+                      Close
+                        </Button>
+                  </ModalFooter>
+                </Modal>
               </div>
-            );
-          }
-        }))
+              <br></br>
+            </div>
+          );
+        }
+      }))
       : (list = undefined);
     return (
       <>

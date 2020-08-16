@@ -3,6 +3,7 @@ import React from 'react';
 import { NavLink, Link } from 'react-router-dom';
 // nodejs library to set properties for components
 import { PropTypes } from 'prop-types';
+import logoLogo from '../../assets/img/manageIT.png';
 
 // javascript plugin used to create scrollbars on windows
 import PerfectScrollbar from 'perfect-scrollbar';
@@ -45,19 +46,19 @@ class Sidebar extends React.Component {
       if (logo.outterLink !== undefined) {
         logoImg = (
           <a
-            href={logo.outterLink}
+            href=""
             className="simple-text logo-mini"
             target="_blank"
             onClick={this.props.toggleSidebar}
           >
             <div className="logo-img">
-              <img src={logo.imgSrc} alt="react-logo" />
+              <img src={logoLogo} alt="manage-IT-logo" />
             </div>
           </a>
         );
         logoText = (
           <a
-            href={logo.outterLink}
+            href=""
             className="simple-text logo-normal"
             target="_blank"
             onClick={this.props.toggleSidebar}

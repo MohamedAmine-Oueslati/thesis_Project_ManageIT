@@ -1,9 +1,6 @@
 import jwtDecode from 'jwt-decode';
 import Dashboard from 'views/Dashboard.js';
-// import Icons from "views/Icons.js";
-// import Map from "views/Map.js";
 import Notifications from 'views/Notifications.js';
-// import Rtl from "views/Rtl.js";
 //Projects Histories
 import ProjectHistoryEmployees from 'views/ProjectHistoryEmployees';
 import ProjectHistoryHeads from 'views/ProjectHistoryHeads';
@@ -11,12 +8,12 @@ import ProjectHistoryMethods from 'views/ProjectHistoryMethods.js';
 import ProjectHistoryIT from 'views/ProjectHistoryIT.js';
 import ProjectHistoryCEO from 'views/ProjectHistoryCEO.js';
 // Projects Informations
-import ProjectInfoEmployees from 'views/ProjectInfoEmployees.js';
 import ProjectInfoHeads from 'views/ProjectInfoHeads.js';
 
 import CreateProject from 'views/CreateProject.js';
+import ChangePassword from 'views/ChangePassword.js';
 
-import Login from 'views/Login.js';
+// import Login from 'views/Login.js';
 import AddEmployee from 'views/AddEmployee.js';
 import AddHead from 'views/AddHead.js';
 import RemoveEmployee from 'views/RemoveEmployee.js';
@@ -37,6 +34,14 @@ if (user && jwtDecode(user).role === 'Employee') {
       rtlName: 'ملف تعريفي للمستخدم',
       icon: 'tim-icons icon-single-02',
       component: UserProfile,
+      layout: '/admin',
+    },
+    {
+      path: '/change-password',
+      name: 'Change Password',
+      rtlName: 'تحديث مشروع',
+      icon: 'tim-icons icon-key-25',
+      component: ChangePassword,
       layout: '/admin',
     },
 
@@ -118,6 +123,14 @@ if (user && jwtDecode(user).role === 'Employee') {
       component: UserProfile,
       layout: '/admin',
     },
+    {
+      path: '/change-password',
+      name: 'Change Password',
+      rtlName: 'تحديث مشروع',
+      icon: 'tim-icons icon-key-25',
+      component: ChangePassword,
+      layout: '/admin',
+    },
 
     {
       path: '/create-project',
@@ -197,6 +210,14 @@ if (user && jwtDecode(user).role === 'Employee') {
       rtlName: 'ملف تعريفي للمستخدم',
       icon: 'tim-icons icon-single-02',
       component: UserProfile,
+      layout: '/admin',
+    },
+    {
+      path: '/change-password',
+      name: 'Change Password',
+      rtlName: 'تحديث مشروع',
+      icon: 'tim-icons icon-key-25',
+      component: ChangePassword,
       layout: '/admin',
     },
 
@@ -297,6 +318,14 @@ if (user && jwtDecode(user).role === 'Employee') {
       component: UserProfile,
       layout: '/admin',
     },
+    {
+      path: '/change-password',
+      name: 'Change Password',
+      rtlName: 'تحديث مشروع',
+      icon: 'tim-icons icon-key-25',
+      component: ChangePassword,
+      layout: '/admin',
+    },
 
     {
       path: '/create-project',
@@ -378,6 +407,14 @@ if (user && jwtDecode(user).role === 'Employee') {
       component: UserProfile,
       layout: '/admin',
     },
+    {
+      path: '/change-password',
+      name: 'Change Password',
+      rtlName: 'تحديث مشروع',
+      icon: 'tim-icons icon-key-25',
+      component: ChangePassword,
+      layout: '/admin',
+    },
 
     {
       path: '/create-project',
@@ -455,21 +492,21 @@ if (user && jwtDecode(user).role === 'Employee') {
       component: UserProfile,
       layout: '/admin',
     },
+    {
+      path: '/change-password',
+      name: 'Change Password',
+      rtlName: 'تحديث مشروع',
+      icon: 'tim-icons icon-key-25',
+      component: ChangePassword,
+      layout: '/admin',
+    },
 
     {
       path: '/projects-history-CEO',
-      name: 'Recieved Projects',
+      name: 'Projects Validation',
       rtlName: 'أرشيف المشاريع',
       icon: 'tim-icons icon-single-copy-04',
       component: ProjectHistoryCEO,
-      layout: '/admin',
-    },
-    {
-      path: '/project-info-heads',
-      name: 'Project Info',
-      rtlName: 'أرشيف المشاريع',
-      icon: 'tim-icons icon-notes',
-      component: ProjectInfoHeads,
       layout: '/admin',
     },
     {

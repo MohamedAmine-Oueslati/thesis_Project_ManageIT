@@ -33,9 +33,9 @@ connection.once('open', () => {
 });
 
 app.use(cors());
-// app.use(express.static('uploads'));
+// app.use(express.static('client/build'));
 // app.use(express.static('build/index.html'));
-app.use(express.static(path.join(__dirname, 'build')));
+app.use(express.static(path.join(__dirname, 'client/build')));
 app.use(bodyParser.json());
 
 //upload configuration multer/cloudinary

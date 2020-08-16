@@ -115,6 +115,7 @@ router.patch('/create/:title', (req, res) => {
 
 // Router for updating status of projects features
 router.patch('/update/:featureTitle', (req, res) => {
+  console.log(req.body);
   Project.findOneAndUpdate(
     { 'feature._id': req.params.featureTitle },
     {
@@ -125,9 +126,54 @@ router.patch('/update/:featureTitle', (req, res) => {
     },
     (err, result) => {
       if (err) {
-        console.log(err);
+        res.send(err);
       } else {
-        console.log(result);
+        res.send(result);
+      }
+    }
+  );
+});
+// Router for updating status and specifications file of projects features
+router.patch('/update/spec/:featureTitle', (req, res) => {
+  console.log(req.body);
+  Project.findOneAndUpdate(
+    { 'feature._id': req.params.featureTitle },
+    {
+      $set: {
+        'feature.$.featureStatus': req.body.featureStatus,
+        'feature.$.featureProgress': req.body.featureProgress,
+        'feature.$.featureSpecificationsFile':
+          req.body.featureSpecificationsFile,
+      },
+    },
+    (err, result) => {
+      if (err) {
+        res.send(err);
+      } else {
+        res.send(result);
+      }
+    }
+  );
+});
+
+// Router for updating status and estimate file of projects features
+router.patch('/update/estimate/:featureTitle', (req, res) => {
+  console.log(req.body);
+  Project.findOneAndUpdate(
+    { 'feature._id': req.params.featureTitle },
+    {
+      $set: {
+        'feature.$.featureStatus': req.body.featureStatus,
+        'feature.$.featureProgress': req.body.featureProgress,
+        'feature.$.featureEstimateFile': req.body.featureEstimateFile,
+        'feature.$.featureEstimatedPrice': req.body.featureEstimatedPrice,
+      },
+    },
+    (err, result) => {
+      if (err) {
+        res.send(err);
+      } else {
+        res.send(result);
       }
     }
   );
@@ -146,20 +192,24 @@ router.get('/methods', (req, res) => {
       for (var i = 0; i < result.length; i++) {
         if (result[i].department === 'Methods') {
           arr1.push(result[i]);
-        } else if (
-          result[i].progress === 'Sent from IT back to Methods Department'
-        ) {
-          arr3.push(result[i]);
         }
-
-        for (var j in result[i].feature) {
-          if (
-            result[i].feature[j].featureStatus !== 'Created' &&
-            result[i].feature[j].featureProgress !==
-              'Sent to the Head of Department'
-          ) {
-            if (!arr2.includes(result[i])) {
-              arr2.push(result[i]);
+        if (result[i].feature) {
+          for (var j in result[i].feature) {
+            if (
+              result[i].feature[j].featureStatus !== 'Created' &&
+              result[i].feature[j].featureProgress !==
+                'Sent to the Head of Department'
+            ) {
+              if (!arr2.includes(result[i])) {
+                arr2.push(result[i]);
+              }
+            }
+            if (
+              result[i].feature[j].featureProgress ===
+                'Estimate Sent back from IT' ||
+              result[i].feature[j].featureProgress === 'Sent to CEO'
+            ) {
+              arr3.push(result[i]);
             }
           }
         }
@@ -190,17 +240,56 @@ router.get('/it', (req, res) => {
 
         for (var j in result[i].feature) {
           if (
-            result[i].feature[j].featureProgress === 'Sent to IT Department'
+            result[i].feature[j].featureProgress === 'Sent to IT Department' ||
+            result[i].feature[j].featureProgress ===
+              'Estimate Sent back from IT' ||
+            result[i].feature[j].featureProgress === 'Sent to CEO'
           ) {
             if (!arr2.includes(result[i])) {
               arr2.push(result[i]);
+            }
+          }
+
+          if (
+            result[i].feature[j].featureProgress ===
+            'Validated and planned for production'
+          ) {
+            if (!arr3.includes(result[i])) {
+              arr3.push(result[i]);
             }
           }
         }
       }
       arr4.push(arr1);
       arr4.push(arr2);
+      arr4.push(arr3);
       res.send(arr4);
+    }
+  });
+});
+
+router.get('/ceo', (req, res) => {
+  Project.find({}, function (err, result) {
+    if (err) {
+      res.send(err);
+    } else {
+      var arr1 = [];
+      for (var i = 0; i < result.length; i++) {
+        if (result[i].feature) {
+          for (var j in result[i].feature) {
+            if (
+              result[i].feature[j].featureProgress === 'Sent to CEO' ||
+              result[i].feature[j].featureProgress ===
+                'Validated and planned for production'
+            ) {
+              if (!arr1.includes(result[i])) {
+                arr1.push(result[i]);
+              }
+            }
+          }
+        }
+      }
+      res.send(arr1);
     }
   });
 });

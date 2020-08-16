@@ -1,13 +1,11 @@
-
-import React from "react";
-import axios from "axios";
-import jwtDecode from "jwt-decode";
+import React from 'react';
+import axios from 'axios';
+import jwtDecode from 'jwt-decode';
 // react plugin for creating notifications over the dashboard
-import NotificationAlert from "react-notification-alert";
+import NotificationAlert from 'react-notification-alert';
 
 // reactstrap components
 import {
-  Alert,
   UncontrolledAlert,
   Button,
   Card,
@@ -15,60 +13,102 @@ import {
   CardBody,
   CardTitle,
   Row,
-  Col
-} from "reactstrap";
+  Col,
+} from 'reactstrap';
 
 class Notifications extends React.Component {
   constructor(props) {
-    super(props)
+    super(props);
     this.state = {
-      notifs: []
-    }
+      notifs: [],
+    };
   }
 
   componentDidMount() {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem('token');
     const user = jwtDecode(token);
-    axios.get('http://localhost:5000/notification/store').then((response) => {
-      var notifs = response.data;
-      console.log(notifs)
-      var arr = []
-      for (var i = notifs.length - 1; i >= 0; i--) {
-        if (notifs[i].employees.length !== 0 && user.role !== "Head") {
-          for (var j = 0; j < notifs[i].employees.length; j++) {
-            if (notifs[i].employees[j].label === user.fullname) {
-              arr.push(notifs[i])
-            }
+    axios
+      .get('http://localhost:5000/notification/retrieve')
+      .then((response) => {
+        var notifs = response.data;
+        var arr = [];
+        for (var i = notifs.length - 1; i >= 0; i--) {
+          if (user.role !== 'Head' && user.role !== 'CEO') {
+            for (var j = 0; j < notifs[i].employees.length; j++)
+              // filter meeting notif
+              if (notifs[i].employees[j].label === user.fullname) {
+                arr.push(notifs[i]);
+              }
           }
-        }
-        else {
-          if (user.role === "Head" && notifs[i].department === user.department) {
-            arr.push(notifs[i])
+          // filter feature creation notif
+          else if (
+            user.role === 'Head' &&
+            notifs[i].department === user.department &&
+            notifs[i].singleSelect
+          ) {
+            arr.push(notifs[i]);
+          }
+          // filter project sent to methods notif
+          else if (
+            user.role === 'Head' &&
+            notifs[i].receiveddepartment === user.department &&
+            notifs[i].receiveddepartment === 'Methods'
+          ) {
+            arr.push(notifs[i]);
+          }
+          // filter project sent to IT notif
+          else if (
+            user.role === 'Head' &&
+            notifs[i].receiveddepartment === user.department &&
+            notifs[i].receiveddepartment === 'IT'
+          ) {
+            arr.push(notifs[i]);
+          }
+          // filter project sent to CEO notif
+          else if (
+            user.role === 'CEO' &&
+            notifs[i].receiveddepartment === 'CEO'
+          ) {
+            arr.push(notifs[i]);
+          }
+          // filter feature declined by CEO notif
+          else if (
+            user.department === 'IT' &&
+            notifs[i].featureStatus === 'Finished' &&
+            notifs[i].sentdepartment === 'CEO'
+          ) {
+            arr.push(notifs[i]);
+          }
+          // filter project creation notif
+          else if (
+            user.role === 'Head' &&
+            notifs[i].department === user.department
+          ) {
+            arr.push(notifs[i]);
           }
         }
         this.setState({ notifs: arr });
-      }
-    });
+      });
   }
 
-  notify = place => {
+  notify = (place) => {
     var color = Math.floor(Math.random() * 5 + 1);
     var type;
     switch (color) {
       case 1:
-        type = "primary";
+        type = 'primary';
         break;
       case 2:
-        type = "success";
+        type = 'success';
         break;
       case 3:
-        type = "danger";
+        type = 'danger';
         break;
       case 4:
-        type = "warning";
+        type = 'warning';
         break;
       case 5:
-        type = "info";
+        type = 'info';
         break;
       default:
         break;
@@ -85,41 +125,75 @@ class Notifications extends React.Component {
         </div>
       ),
       type: type,
-      icon: "tim-icons icon-bell-55",
-      autoDismiss: 7
+      icon: 'tim-icons icon-bell-55',
+      autoDismiss: 7,
     };
     this.refs.notificationAlert.notificationAlert(options);
   };
   render() {
-    console.log(this.state.notifs)
+    console.log(this.state.notifs);
     var notification = this.state.notifs.map((notif) => {
       if (notif.employees.length !== 0) {
         return (
           <UncontrolledAlert className="alert-with-icon" color="info">
-            <span
-              className="tim-icons icon-bell-55"
-              data-notify="icon"
-            />
+            <span className="tim-icons icon-bell-55" data-notify="icon" />
             <span data-notify="message">
-              New message : you have a {notif.subject} meeting in {notif.date} From your head of department
-                    </span>
-          </UncontrolledAlert>
-        )
-      }
-      else {
-        return (
-          <UncontrolledAlert className="alert-with-icon" color="info">
-            <span
-              className="tim-icons icon-bell-55"
-              data-notify="icon"
-            />
-            <span data-notify="message">
-              New message : You received a new project {notif.progress}
+              New message : you have a new meeting entitled {notif.subject} at{' '}
+              {notif.date} from the head of your department
             </span>
           </UncontrolledAlert>
-        )
+        );
+      } else if (notif.status) {
+        return (
+          <UncontrolledAlert className="alert-with-icon" color="info">
+            <span className="tim-icons icon-bell-55" data-notify="icon" />
+            <span data-notify="message">
+              New message : You have received a new project entitled{' '}
+              {notif.title} {notif.progress}
+            </span>
+          </UncontrolledAlert>
+        );
+      } else if (notif.featureStatus === 'Finished') {
+        return (
+          <UncontrolledAlert className="alert-with-icon" color="info">
+            <span className="tim-icons icon-bell-55" data-notify="icon" />
+            <span data-notify="message">
+              New message : Your feature has been declined by CEO
+            </span>
+          </UncontrolledAlert>
+        );
+      } else if (notif.singleSelect) {
+        return (
+          <UncontrolledAlert className="alert-with-icon" color="info">
+            <span className="tim-icons icon-bell-55" data-notify="icon" />
+            <span data-notify="message">
+              New message : You have received a new project entitled{' '}
+              {notif.featureTitle} {notif.featureProgress}
+            </span>
+          </UncontrolledAlert>
+        );
+      } else if (notif.receiveddepartment && notif.sentdepartment !== 'CEO') {
+        return (
+          <UncontrolledAlert className="alert-with-icon" color="info">
+            <span className="tim-icons icon-bell-55" data-notify="icon" />
+            <span data-notify="message">
+              New message : You have received a new feature from{' '}
+              {notif.sentdepartment} department entitled {notif.featureTitle}
+            </span>
+          </UncontrolledAlert>
+        );
+      } else if (notif.receiveddepartment) {
+        return (
+          <UncontrolledAlert className="alert-with-icon" color="info">
+            <span className="tim-icons icon-bell-55" data-notify="icon" />
+            <span data-notify="message">
+              New message : You have received a new feature from{' '}
+              {notif.sentdepartment} entitled {notif.featureTitle}
+            </span>
+          </UncontrolledAlert>
+        );
       }
-    })
+    });
     return (
       <>
         <div className="content">
@@ -127,17 +201,15 @@ class Notifications extends React.Component {
             <NotificationAlert ref="notificationAlert" />
           </div>
           <Row>
-            <Col md="6">
+            <Col md="10">
               <Card>
                 <CardHeader>
                   <CardTitle tag="h4">Notifications</CardTitle>
                 </CardHeader>
-                <CardBody>
-                  {notification}
-                </CardBody>
+                <CardBody>{notification}</CardBody>
               </Card>
             </Col>
-            <Col md="6">
+            {/* <Col md="6">
               <Card>
                 <CardHeader>
                   <CardTitle tag="h4">Notification states</CardTitle>
@@ -258,7 +330,7 @@ class Notifications extends React.Component {
                   </div>
                 </CardBody>
               </Card>
-            </Col>
+            </Col> */}
           </Row>
         </div>
       </>

@@ -1,13 +1,13 @@
 HTML CSSResult EDIT ON body {
   background-color: #f3ebf6;
-  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande',
-    'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+  font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
+    "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
 }
 
 body {
   background-color: #292931;
-  background: url(https://avante.biz/wp-content/uploads/Business-manager-wallpaper/Business-manager-wallpaper5.jpg)
-    no-repeat center center fixed;
+  /* background: url(https://avante.biz/wp-content/uploads/Business-manager-wallpaper/Business-manager-wallpaper5.jpg) */
+  /* no-repeat center center fixed; */
   -webkit-background-size: cover;
   -moz-background-size: cover;
   -o-background-size: cover;
@@ -27,7 +27,7 @@ body {
 .sign {
   padding-top: 40px;
   color: #8c55aa;
-  font-family: 'Ubuntu', sans-serif;
+  font-family: "Ubuntu", sans-serif;
   font-weight: bold;
   font-size: 23px;
 }
@@ -49,7 +49,7 @@ body {
   margin-left: 46px;
   text-align: center;
   margin-bottom: 27px;
-  font-family: 'Ubuntu', sans-serif;
+  font-family: "Ubuntu", sans-serif;
 }
 
 form.form1 {
@@ -73,7 +73,7 @@ form.form1 {
   margin-left: 46px;
   text-align: center;
   margin-bottom: 27px;
-  font-family: 'Ubuntu', sans-serif;
+  font-family: "Ubuntu", sans-serif;
 }
 
 .un:focus,
@@ -91,7 +91,7 @@ form.form1 {
   padding-right: 40px;
   padding-bottom: 10px;
   padding-top: 10px;
-  font-family: 'Ubuntu', sans-serif;
+  font-family: "Ubuntu", sans-serif;
   margin-left: 35%;
   font-size: 13px;
   box-shadow: 0 0 20px 1px rgba(0, 0, 0, 0.04);

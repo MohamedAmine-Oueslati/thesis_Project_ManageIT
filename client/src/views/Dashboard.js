@@ -28,11 +28,6 @@ import {
   UncontrolledTooltip
 } from "reactstrap";
 
-// core components
-import {
-  chartExample1,
-} from "variables/charts.js";
-
 class Dashboard extends React.Component {
   constructor(props) {
     super(props);
@@ -41,6 +36,8 @@ class Dashboard extends React.Component {
       projMonth: [],
       projData: [],
       UserData: [],
+      projBudget: [],
+      sumBudget: 0,
       numProj: 0,
       numUser: 0
     };
@@ -66,6 +63,14 @@ class Dashboard extends React.Component {
         console.log(response.data);
         var projMonth = response.data
         this.setState({ projMonth })
+      })
+    axios.get("http://localhost:5000/project/projectbudget")
+      .then((response) => {
+        console.log(response.data);
+        var sumBudget = response.data.pop()
+        console.log(sumBudget)
+        var projBudget = response.data
+        this.setState({ projBudget, sumBudget })
       })
   }
 
@@ -105,7 +110,7 @@ class Dashboard extends React.Component {
           ],
           datasets: [
             {
-              label: "Employees stats",
+              label: "Project stats",
               fill: true,
               backgroundColor: gradientStroke,
               borderColor: "#1f8ef1",
@@ -191,7 +196,7 @@ class Dashboard extends React.Component {
           labels: ["FIN", "ACC", "MARK", "H.R", "METH", "IT"],
           datasets: [
             {
-              label: "Data",
+              label: "Employees",
               fill: true,
               backgroundColor: gradientStroke,
               borderColor: "#1f8ef1",
@@ -275,10 +280,10 @@ class Dashboard extends React.Component {
         gradientStroke.addColorStop(0, "rgba(119,52,169,0)"); //purple colors
 
         return {
-          labels: ["APR", "MAI", "JUN", "JUL", "AUG", "SEP"],
+          labels: ["FIN", "ACC", "MARK", "H.R", "METH", "IT"],
           datasets: [
             {
-              label: "Countries",
+              label: "Money",
               fill: true,
               backgroundColor: gradientStroke,
               hoverBackgroundColor: gradientStroke,
@@ -286,7 +291,7 @@ class Dashboard extends React.Component {
               borderWidth: 2,
               borderDash: [],
               borderDashOffset: 0.0,
-              data: [53, 20, 10, 80, 100, 45]
+              data: this.state.projBudget
             }
           ]
         };
@@ -356,7 +361,7 @@ class Dashboard extends React.Component {
           labels: ["FIN", "ACC", "MARK", "H.R", "METH", "IT"],
           datasets: [
             {
-              label: "My First dataset",
+              label: "Project per department",
               fill: true,
               backgroundColor: gradientStroke,
               borderColor: "#00d6b4",
@@ -552,7 +557,7 @@ class Dashboard extends React.Component {
                   <h5 className="card-category">Project Cost</h5>
                   <CardTitle tag="h3">
                     <i className="tim-icons icon-delivery-fast text-primary" />{" "}
-                    3,500€
+                    {this.state.sumBudget}€
                   </CardTitle>
                 </CardHeader>
                 <CardBody>
